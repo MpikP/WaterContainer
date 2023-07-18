@@ -1,11 +1,14 @@
 package pl.kurs.models;
 
+import java.io.Serializable;
 import java.util.Objects;
 
-public class Container {
+public class Container implements Serializable {
+    static final long serialVersionUID = 1L;
     private String name;
     private double maxCapacity;
     private double waterLevel;
+
 
     public Container(String name, double maxCapacity, double waterLevel) {
         this.name = name;
