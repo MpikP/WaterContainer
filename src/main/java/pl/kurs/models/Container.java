@@ -1,13 +1,14 @@
 package pl.kurs.models;
 
 import java.io.Serializable;
-import java.util.Objects;
+import java.util.*;
 
 public class Container implements Serializable {
     static final long serialVersionUID = 1L;
     private String name;
     private double maxCapacity;
     private double waterLevel;
+//TODO: dodac logike z przelewaniem wody, nastepnie zrobic pull request i pokazać konflikt
 
 
     public Container(String name, double maxCapacity, double waterLevel) {
@@ -57,4 +58,29 @@ public class Container implements Serializable {
     public int hashCode() {
         return Objects.hash(name, maxCapacity, waterLevel);
     }
+
+    public void addWater(double qty) {
+        if (maxCapacity < (qty + waterLevel)) {
+            throw new RuntimeException("Too much water to add.");
+        } else {
+            waterLevel += qty;
+        }
+    }
+
+    public void subtractWater(double qty) {
+        if (waterLevel - qty < 0) {
+            throw new RuntimeException("Too much water to subtract.");
+        } else {
+            waterLevel -= qty;
+        }
+    }
+
+    public void transferWater(Container c, double qty) {
+        c.subtractWater(qty);
+        addWater(qty);
+    }
+
+
+
+
 }
