@@ -8,7 +8,6 @@ public class Container implements Serializable {
     private String name;
     private double maxCapacity;
     private double waterLevel;
-//TODO: dodac logike z przelewaniem wody, nastepnie zrobic pull request i pokazać konflikt
 
 
     private Container(String name, double maxCapacity, double waterLevel) {
