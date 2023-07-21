@@ -11,10 +11,19 @@ public class Container implements Serializable {
 //TODO: dodac logike z przelewaniem wody, nastepnie zrobic pull request i pokazać konflikt
 
 
-    public Container(String name, double maxCapacity, double waterLevel) {
+    private Container(String name, double maxCapacity, double waterLevel) {
         this.name = name;
         this.maxCapacity = maxCapacity;
         this.waterLevel = waterLevel;
+    }
+    public Container create(String name, double maxCapacity, double waterLevel){
+        if(maxCapacity <= 0)
+            throw new RuntimeException("Max capacity should be more then 0");
+        if(waterLevel < 0)
+            throw new RuntimeException("Water level should be more or equal then 0");
+        if(maxCapacity < waterLevel)
+            throw new RuntimeException("Water level can't be more then max capacity");
+        return new Container(name, maxCapacity, waterLevel);
     }
 
     public String getName() {
