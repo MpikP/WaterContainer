@@ -1,6 +1,8 @@
 package pl.kurs.models;
 
 import java.io.Serializable;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 
 public class Container implements Serializable {
@@ -9,13 +11,15 @@ public class Container implements Serializable {
     private double maxCapacity;
     private double waterLevel;
 
+    private List<OperationEvent> operationEventsHistory = new ArrayList<>();
+
 
     private Container(String name, double maxCapacity, double waterLevel) {
         this.name = name;
         this.maxCapacity = maxCapacity;
         this.waterLevel = waterLevel;
     }
-    public Container create(String name, double maxCapacity, double waterLevel){
+    public static Container create(String name, double maxCapacity, double waterLevel){
         if(maxCapacity <= 0)
             throw new RuntimeException("Max capacity should be more then 0");
         if(waterLevel < 0)
@@ -45,6 +49,10 @@ public class Container implements Serializable {
         return maxCapacity;
     }
 
+    public List<OperationEvent> getOperationEventsHistory() {
+        return operationEventsHistory;
+    }
+
     @Override
     public String toString() {
         return "Container{" +
@@ -68,24 +76,48 @@ public class Container implements Serializable {
     }
 
     public void addWater(double qty) {
-        if (maxCapacity < (qty + waterLevel)) {
-            throw new RuntimeException("Too much water to add.");
+        boolean success;
+        if (!addingWaterIsPossible(qty)) {
+            success = false;
         } else {
             waterLevel += qty;
+            success = true;
         }
+        saveEvent(Timestamp.from(Instant.now()), this, OperationEvent.OperationType.ADD, qty, success);
     }
 
     public void subtractWater(double qty) {
-        if (waterLevel - qty < 0) {
-            throw new RuntimeException("Too much water to subtract.");
+        boolean success;
+        if (!drainingWaterIsPossible(qty)) {
+            success = false;
         } else {
             waterLevel -= qty;
+            success = true;
+        }
+        saveEvent(Timestamp.from(Instant.now()), this, OperationEvent.OperationType.DRAIN, qty, success);
+    }
+
+    private boolean addingWaterIsPossible(double value) {
+        return waterLevel + value <= maxCapacity;
+    }
+
+    private boolean drainingWaterIsPossible(double value) {
+        return waterLevel - value >= 0;
+    }
+
+
+    public void transferWater(Container source, double qty) {
+        if(source.drainingWaterIsPossible(qty) && this.addingWaterIsPossible(qty)) {
+            source.subtractWater(qty);
+            this.addWater(qty);
+        } else {
+            source.saveEvent(Timestamp.from(Instant.now()), source, OperationEvent.OperationType.DRAIN, qty, false);
+            this.saveEvent(Timestamp.from(Instant.now()), this, OperationEvent.OperationType.ADD, qty, false);
         }
     }
 
-    public void transferWater(Container c, double qty) {
-        c.subtractWater(qty);
-        addWater(qty);
+    private void saveEvent(Timestamp date, Container container, OperationEvent.OperationType type, double value, boolean success){
+        operationEventsHistory.add(new OperationEvent(date, container, type, value, success));
     }
 
 
